@@ -9,8 +9,10 @@ function hasGetUserMedia() {
 export default class Webcam extends Component {
   static defaultProps = {
     audio: true,
-    height: 480,
-    width: 640,
+    viewStyle: {
+		height: 480,
+		width: 640
+	},
     screenshotFormat: 'image/webp',
     onUserMedia: () => {}
   };
@@ -19,14 +21,14 @@ export default class Webcam extends Component {
     audio: PropTypes.bool,
     muted: PropTypes.bool,
     onUserMedia: PropTypes.func,
-    height: PropTypes.oneOfType([
+    /*height: PropTypes.oneOfType([
       PropTypes.number,
       PropTypes.string
     ]),
     width: PropTypes.oneOfType([
       PropTypes.number,
       PropTypes.string
-    ]),
+    ]),*/
     screenshotFormat: PropTypes.oneOf([
       'image/webp',
       'image/png',
@@ -200,8 +202,7 @@ export default class Webcam extends Component {
     return (
       <video
         autoPlay
-        width={this.props.width}
-        height={this.props.height}
+        style={this.props.viewStyle}
         src={this.state.src}
         muted={this.props.muted}
         className={this.props.className}
