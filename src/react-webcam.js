@@ -9,7 +9,7 @@ function hasGetUserMedia() {
 export default class Webcam extends Component {
   static defaultProps = {
     audio: true,
-    viewStyle: {
+    style: {
 		height: 480,
 		width: 640
 	},
@@ -21,14 +21,7 @@ export default class Webcam extends Component {
     audio: PropTypes.bool,
     muted: PropTypes.bool,
     onUserMedia: PropTypes.func,
-    /*height: PropTypes.oneOfType([
-      PropTypes.number,
-      PropTypes.string
-    ]),
-    width: PropTypes.oneOfType([
-      PropTypes.number,
-      PropTypes.string
-    ]),*/
+	style: PropTypes.object,
     screenshotFormat: PropTypes.oneOf([
       'image/webp',
       'image/png',
@@ -202,7 +195,7 @@ export default class Webcam extends Component {
     return (
       <video
         autoPlay
-        style={this.props.viewStyle}
+        style={this.props.style}
         src={this.state.src}
         muted={this.props.muted}
         className={this.props.className}
