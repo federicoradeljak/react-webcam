@@ -89,6 +89,7 @@ export default class Webcam extends Component {
             if (device.kind === 'audio') {
               audioSource = device.id;
             } else if (device.kind === 'video') {
+              console.log(device.id);
               videoSource = device.id;
             }
           });
