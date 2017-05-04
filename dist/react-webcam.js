@@ -7,7 +7,7 @@
 		exports["Webcam"] = factory(require("react"), require("react-dom"));
 	else
 		root["Webcam"] = factory(root["React"], root["ReactDOM"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -66,11 +66,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var _react = __webpack_require__(1);
+	var _react = __webpack_require__(2);
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactDom = __webpack_require__(2);
+	var _reactDom = __webpack_require__(3);
+
+	var _getDeviceId = __webpack_require__(1);
+
+	var _getDeviceId2 = _interopRequireDefault(_getDeviceId);
 
 	function hasGetUserMedia() {
 	    return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
@@ -82,12 +86,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _createClass(Webcam, null, [{
 	        key: 'defaultProps',
 	        value: {
-	            audio: true,
+	            audio: false,
 	            style: {
 	                height: 480,
 	                width: 640
 	            },
-	            screenshotFormat: 'image/webp',
+	            screenshotFormat: 'image/jpeg',
 	            onUserMedia: function onUserMedia() {}
 	        },
 	        enumerable: true
@@ -98,6 +102,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            muted: _react.PropTypes.bool,
 	            onUserMedia: _react.PropTypes.func,
 	            style: _react.PropTypes.object,
+	            facingMode: _react.PropTypes.oneOf(['front', 'rear']),
+	            audioSource: _react.PropTypes.string,
+	            videoSource: _react.PropTypes.string,
 	            screenshotFormat: _react.PropTypes.oneOf(['image/webp', 'image/png', 'image/jpeg']),
 	            className: _react.PropTypes.string
 	        },
@@ -163,40 +170,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.props.audioSource && this.props.videoSource) {
 	            sourceSelected(this.props.audioSource, this.props.videoSource);
 	        } else {
-	            if ('mediaDevices' in navigator) {
-	                navigator.mediaDevices.enumerateDevices().then(function (devices) {
-	                    var audioSource = null;
-	                    var videoSource = null;
-
-	                    devices.forEach(function (device) {
-	                        console.log(device.kind, device.id);
-	                        if (device.kind === 'audio') {
-	                            audioSource = device.id;
-	                        } else if (device.kind === 'video') {
-	                            videoSource = device.id;
-	                        }
-	                    });
-
-	                    sourceSelected(audioSource, videoSource);
+	            (function () {
+	                var audioSource = 'default';
+	                _getDeviceId2['default'](_this.props.facingMode).then(function (videoSource) {
+	                    return sourceSelected(audioSource, videoSource);
 	                })['catch'](function (error) {
-	                    console.log(error.name + ': ' + error.message); // eslint-disable-line no-console
+	                    return console.error(error.name + ': ' + error.message);
 	                });
-	            } else {
-	                    MediaStreamTrack.getSources(function (sources) {
-	                        var audioSource = null;
-	                        var videoSource = null;
-
-	                        sources.forEach(function (source) {
-	                            if (source.kind === 'audio') {
-	                                audioSource = source.id;
-	                            } else if (source.kind === 'video') {
-	                                videoSource = source.id;
-	                            }
-	                        });
-
-	                        sourceSelected(audioSource, videoSource);
-	                    });
-	                }
+	            })();
 	        }
 
 	        Webcam.userMediaRequested = true;
@@ -322,13 +303,63 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ (function(module, exports) {
 
-	module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
+	/**
+	 * Created by Federico on 4/5/2017.
+	 */
+	'use strict';
+
+	exports.__esModule = true;
+	exports['default'] = getDeviceId;
+
+	function getDeviceId(facingMode) {
+	    // Get manual deviceId from available devices.
+	    return new Promise(function (resolve, reject) {
+	        navigator.mediaDevices.enumerateDevices().then(function (devices) {
+	            // Filter out non-videoinputs
+	            var videoDevices = devices.filter(function (device) {
+	                return device.kind == 'videoinput';
+	            });
+
+	            if (videoDevices.length < 1) {
+	                reject(new Error('No video input devices found'));
+	                return;
+	            } else if (videoDevices.length == 1) {
+	                // Only 1 video device available thus stop here
+	                resolve(devices[0].deviceId);
+	                return;
+	            }
+
+	            var pattern = facingMode == 'rear' ? /rear|back|environment/ig : /front|user|face/ig;
+
+	            // Filter out video devices without the pattern
+	            var filteredDevices = videoDevices.filter(function (_ref) {
+	                var label = _ref.label;
+	                return pattern.test(label);
+	            });
+
+	            if (filteredDevices.length > 0) {
+	                resolve(filteredDevices[0].deviceId);
+	            } else {
+	                // No device found with the pattern thus use another video device
+	                resolve(videoDevices[0].deviceId);
+	            }
+	        });
+	    });
+	}
+
+	module.exports = exports['default'];
 
 /***/ }),
 /* 2 */
 /***/ (function(module, exports) {
 
 	module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
 
 /***/ })
 /******/ ])
